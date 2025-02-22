@@ -13,7 +13,6 @@ const Navbar = () => {
         <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>☰</button>
         <div className={`md:flex space-x-6 ${menuOpen ? "block" : "hidden"} md:block`}>
           <Link href="/about" className="hover:text-blue-400">About</Link>
-          <Link href="/contact" className="hover:text-blue-400">Contact</Link>
         </div>
       </div>
     </nav>
@@ -45,15 +44,16 @@ const Card = ({ title, description, children }) => {
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 const TableTabs = ({ tables }) => {
-    const [activeTable, setActiveTable] = useState(tables[0]); // Default to first table
+    const [activeTable, setActiveTable] = useState(tables[0]); 
+
 
     const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/table/${activeTable}`, fetcher, {
         revalidateOnFocus: false, 
-        dedupingInterval: 60000, 
+        dedupingInterval: 100000, 
     });
 
     return (
-        <div style={{ maxWidth: "800px", margin: "auto", fontFamily: "Arial, sans-serif" }}>
+        <div className="overflow-x-auto" style={{ maxWidth: "800px", margin: "auto", fontFamily: "Arial, sans-serif" }}>
             {/* Tabs Navigation */}
             <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
                 {tables.map((table) => (
@@ -134,7 +134,7 @@ const SQLQueryConverter = () => {
       
       <input
         type="text"
-        placeholder="Enter your query..."
+        placeholder="fetch all female employees name, salary in increasing order..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         className="p-2 border rounded w-full mb-4 text-black"
@@ -308,7 +308,7 @@ const Home = () => {
         <p className="text-center text-gray-400 mt-2">Harness AI to generate SQL queries without complex syntax.</p>
         <div>
           <h1 className='text-3xl text-center mt-10'>Tables</h1>
-        <TableTabs tables={["demographics", "salary"]} />
+        <TableTabs tables={["demographics", "salary"]}  />
         </div>
         <div className="mt-6">
           <SQLQueryConverter />
