@@ -1,6 +1,7 @@
 "use client"
 import React, { useState } from "react";
 import Link from "next/link";
+import useSWR from "swr";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -39,6 +40,73 @@ const Card = ({ title, description, children }) => {
     </div>
   );
 };
+
+
+const fetcher = (url) => fetch(url).then((res) => res.json());
+
+const TableTabs = ({ tables }) => {
+    const [activeTable, setActiveTable] = useState(tables[0]); // Default to first table
+
+    const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/table/${activeTable}`, fetcher, {
+        revalidateOnFocus: false, 
+        dedupingInterval: 60000, 
+    });
+
+    return (
+        <div style={{ maxWidth: "800px", margin: "auto", fontFamily: "Arial, sans-serif" }}>
+            {/* Tabs Navigation */}
+            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+                {tables.map((table) => (
+                    <button
+                        key={table}
+                        onClick={() => setActiveTable(table)}
+                        style={{
+                            padding: "10px",
+                            cursor: "pointer",
+                            backgroundColor: activeTable === table ? "#007bff" : "#ddd",
+                            color: activeTable === table ? "white" : "black",
+                            border: "none",
+                            borderRadius: "5px",
+                        }}
+                    >
+                        {table}
+                    </button>
+                ))}
+            </div>
+
+            {/* Error handling */}
+            {error && <p style={{ color: "red" }}>Error loading data: {error.message}</p>}
+
+            {/* Loading state */}
+            {isLoading && <p>Loading...</p>}
+
+            {/* Table Data Display */}
+            {data && data.data && data.data.length > 0 ? (
+                <table border="1" cellPadding="10" style={{ borderCollapse: "collapse", width: "100%" }}>
+                    <thead>
+                        <tr>
+                            {Object.keys(data.data[0]).map((header) => (
+                                <th key={header}>{header}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {data.data.map((row, index) => (
+                            <tr key={index}>
+                                {Object.values(row).map((value, i) => (
+                                    <td key={i}>{value}</td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                !isLoading && <p>No data available.</p>
+            )}
+        </div>
+    );
+};
+
 
 
 const SQLQueryConverter = () => {
@@ -238,7 +306,10 @@ const Home = () => {
       <div className="max-w-4xl mx-auto py-10 px-4">
         <h1 className="text-3xl font-bold text-center">Transform Natural Language into SQL Queries</h1>
         <p className="text-center text-gray-400 mt-2">Harness AI to generate SQL queries without complex syntax.</p>
-
+        <div>
+          <h1 className='text-3xl text-center mt-10'>Tables</h1>
+        <TableTabs tables={["demographics", "salary"]} />
+        </div>
         <div className="mt-6">
           <SQLQueryConverter />
         </div>
